@@ -1,5 +1,14 @@
 ## Octo DB
-Implementation of a in-memory vector DB like FAISS from scratch.
+
+Octo DB is a lightweight, in-memory vector database built from scratch with a focus on understanding how fast similarity search works under the hood. Inspired by libraries such as FAISS, the project stores high-dimensional vectors and provides efficient approximate nearest-neighbor queries without relying on an external database engine.
+
+Implementation plan:
+> - Implement an HNSW (Hierarchical Navigable Small World) index using skip-list-style, multi-layer graph navigation.
+> - Add configurable construction and search parameters, including the maximum number of neighbors (`M`), construction breadth (`efConstruction`), and search breadth (`efSearch`).
+> - Support insertion by selecting an entry point, searching progressively through each graph layer, and connecting each new vector to its closest neighbors.
+> - Implement approximate nearest-neighbor search from the top layer down to layer zero, returning the requested number of nearest vectors and their distances.
+> - Add neighbor-pruning and bidirectional-link maintenance to keep the graph navigable as the index grows.
+> - Add tests and benchmarks to validate search accuracy, insertion behavior, and performance against the current brute-force implementation.
 
 ### Folder structure:
 ```text
