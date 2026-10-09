@@ -1,94 +1,98 @@
-## Octo DB
+# OctoDB
 
-Octo DB is a lightweight, in-memory vector database built from scratch with a focus on understanding how fast similarity search works under the hood. Inspired by libraries such as FAISS, the project stores high-dimensional vectors and provides efficient approximate nearest-neighbor queries without relying on an external database engine.
+OctoDB is a lightweight, in-memory vector database built from scratch with a focus on understanding how fast similarity search works under the hood. Inspired by libraries such as FAISS, the project stores high-dimensional vectors and provides efficient nearest-neighbor queries using a C++ engine with a Python interface.
 
-Implementation plan:
-> - Implement an HNSW (Hierarchical Navigable Small World) index using skip-list-style, multi-layer graph navigation.
-> - Add configurable construction and search parameters, including the maximum number of neighbors (`M`), construction breadth (`efConstruction`), and search breadth (`efSearch`).
-> - Support insertion by selecting an entry point, searching progressively through each graph layer, and connecting each new vector to its closest neighbors.
-> - Implement approximate nearest-neighbor search from the top layer down to layer zero, returning the requested number of nearest vectors and their distances.
-> - Add neighbor-pruning and bidirectional-link maintenance to keep the graph navigable as the index grows.
-> - Add tests and benchmarks to validate search accuracy, insertion behavior, and performance against the current brute-force implementation.
+Currently, it implements a `FlatIndexL2` for exact brute-force search.
 
-### Folder structure:
+## Implementation Plan (HNSW)
+
+Future goals include transitioning to an HNSW (Hierarchical Navigable Small World) index:
+- Implement multi-layer graph navigation.
+- Add configurable parameters (`M`, `efConstruction`, `efSearch`).
+- Support bidirectional-link maintenance and neighbor-pruning.
+- Benchmarking against the current brute-force implementation.
+
+## Project Structure
+
 ```text
-my_vector_db/
-├── CMakeLists.txt        # the C++ build instructions
+OctoDB/
+├── CMakeLists.txt      # C++ build instructions
+├── pyproject.toml      # Python project metadata and dependencies
+├── uv.lock             # uv lockfile
+├── app.py              # Python interface and example usage
 ├── src/
-│   └── index.cpp         # the C++ engine source code
-├── app.py                # the Python API
-├── requirements.txt      # python dependencies
-├── build/                # where CMake outputs the .so/.pyd file
-└── venv/                 # the isolated Python environment
+│   └── index.cpp       # C++ engine source code (my_faiss)
+├── build/              # CMake build output directory
+└── README.md           # Project documentation
 ```
 
-### Get Started
+## Requirements
 
-## 1. Create and Activate the Virtual Environment
+- **C++ Compiler**: A compiler supporting C++14 (e.g., GCC, Clang, or MSVC).
+- **CMake**: Version 3.14 or higher.
+- **Python**: Version 3.14 or higher.
+- **Dependencies**:
+  - `numpy` (>=2.5.3)
+  - `pybind11` (v3.1.0, handled via CMake FetchContent)
 
-**On Linux**
+## Setup and Installation
 
+### 1. Environment Setup
+
+This project uses `uv` for Python package management, but you can also use `pip`.
+
+**Using uv:**
 ```bash
-python3 -m venv venv
+uv sync
+```
+
+**Using pip:**
+```bash
+python -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On Linux/macOS:
 source venv/bin/activate
 
-```
-## 2. Install Dependencies
-
-The `requirements.txt` file in your root folder:
-
-```text
-numpy>=2.5.0
-pybind11==3.1.0
+pip install .
 ```
 
-installing them into your venv:
+### 2. Build the C++ Engine
 
-```bash
-pip install -r requirements.txt
-
-```
-
-## 3. Build the C++ Engine (Inside the Venv)
-
-for the CMake build:
+The C++ engine must be compiled as a Python module named `my_faiss`.
 
 ```bash
 mkdir build
 cd build
 cmake ..
-
-```
-
-**On Linux / macOS:**
-
-```bash
-make
-
-```
-
-**On Windows (Visual Studio / MSVC):**
-
-```cmd
 cmake --build . --config Release
-
 ```
 
-## 4. Link and Run
+**Note for Windows (MinGW):**
+If you are using MinGW, ensure the bin directory (e.g., `C:\mingw64\bin`) is in your PATH, or update the path in `app.py`.
 
-Copy the single compiled .so file out of the `build/` directory and place it in your root directory next to `app.py`.
+## Running the Application
 
-```text
-my_vector_db/
-├── app.py
-├── my_faiss.cpython-310-x86_64-linux-gnu.so  <-- The compiled C++ engine
-...
-
-```
-
-Run your Python script:
+After building the engine, ensure the compiled `.pyd` (Windows) or `.so` (Linux/macOS) file is in the `build/` directory. `app.py` is configured to look for the module in that location.
 
 ```bash
+# Ensure your environment is activated
 python app.py
-
 ```
+
+## Scripts
+
+- `app.py`: Demonstrates initializing the index, adding random vectors, and performing a search.
+
+## Environment Variables
+
+- No specific environment variables are currently required.
+
+## Tests
+
+- [TODO] Add unit tests for both the C++ engine and Python interface.
+- [TODO] Add benchmarks for search latency and accuracy.
+
+## License
+
+- [TODO] Define project license.

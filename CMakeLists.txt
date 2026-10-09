@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.14)
-project(my_faiss)
+project(my_faiss LANGUAGES CXX)
 
-# Enforce modern C++ and hardware-specific optimization (SIMD)
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-O3 -march=native")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 1. Find the Python installation located in your virtual environment
+# C++ does not use a Python virtual environment. Python is required here only
+# because this target is a Python extension module.
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 
-# 2. Tell CMake to download Pybind11 v3.1.0 directly from GitHub
 include(FetchContent)
 FetchContent_Declare(
     pybind11
@@ -17,5 +17,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-# 3. Compile the C++ code into a Python module (.so or .pyd)
 pybind11_add_module(my_faiss src/index.cpp)
+
+if (MSVC)
+    target_compile_options(my_faiss PRIVATE /O2)
+else()
+    target_compile_options(my_faiss PRIVATE -O3)
+endif()
